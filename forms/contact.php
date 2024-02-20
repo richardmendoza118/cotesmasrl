@@ -1,41 +1,45 @@
 <?php
-  /**
-  * Requires the "PHP Email Form" library
-  * The "PHP Email Form" library is available only in the pro version of the template
-  * The library should be uploaded to: vendor/php-email-form/php-email-form.php
-  * For more info and help: https://bootstrapmade.com/php-email-form/
-  */
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
-  // Replace contact@example.com with your real receiving email address
-  $receiving_email_address = 'contact@example.com';
+require '../assets/PHPMailer/src/Exception.php';
+require '../assets/PHPMailer/src/PHPMailer.php';
+require '../assets/PHPMailer/src/SMTP.php';
 
-  if( file_exists($php_email_form = '../assets/vendor/php-email-form/php-email-form.php' )) {
-    include( $php_email_form );
-  } else {
-    die( 'Unable to load the "PHP Email Form" Library!');
-  }
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Recopila los datos del formulario
+    $nombre = htmlspecialchars($_POST["name"]);
+    $correo = htmlspecialchars($_POST["email"]);
+    $subject = htmlspecialchars($_POST["subject"]);
+    $mensaje = htmlspecialchars($_POST["message"]);
 
-  $contact = new PHP_Email_Form;
-  $contact->ajax = true;
-  
-  $contact->to = $receiving_email_address;
-  $contact->from_name = $_POST['name'];
-  $contact->from_email = $_POST['email'];
-  $contact->subject = $_POST['subject'];
+    // Configuración de PHPMailer
+    $mail = new PHPMailer(true);
 
-  // Uncomment below code if you want to use SMTP to send emails. You need to enter your correct SMTP credentials
-  /*
-  $contact->smtp = array(
-    'host' => 'example.com',
-    'username' => 'example',
-    'password' => 'pass',
-    'port' => '587'
-  );
-  */
+    try {
+        $mail->isSMTP();
+        $mail->Host = 'mail.cotesmasrl.com'; // Reemplaza con tu servidor SMTP
+        $mail->SMTPAuth = true;
+        $mail->Username = 'soporteti@cotesmasrl.com'; // Reemplaza con tu usuario SMTP
+        $mail->Password = 'dac12$cla35'; // Reemplaza con tu contraseña SMTP
+        $mail->SMTPSecure = 'tls';
+        $mail->Port = 587;
 
-  $contact->add_message( $_POST['name'], 'From');
-  $contact->add_message( $_POST['email'], 'Email');
-  $contact->add_message( $_POST['message'], 'Message', 10);
+        // Configuración de correo
+        $mail->setFrom($correo, $nombre);
+        $mail->addAddress('soporteti@cotesmasrl.com'); // Reemplaza con el correo de destino
+        $mail->Subject = $subject;
+        $mail->Body = $mensaje;
 
-  echo $contact->send();
+        // Enviar el correo
+        $mail->send();
+
+        echo "¡Gracias por ponerte en contacto con nosotros!";
+
+    } catch (Exception $e) {
+        echo "Error al enviar el correo: {$mail->ErrorInfo}";
+    }
+} else {
+    echo "Acceso no autorizado";
+}
 ?>
